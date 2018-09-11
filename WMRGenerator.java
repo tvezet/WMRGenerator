@@ -1,5 +1,6 @@
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,7 +12,129 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Random;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+
+
+
+
+
 public class WMRGenerator {
+    public static String defaultConfig = "{\n" + 
+            "    \"gameTypes\": [\n" + 
+            "            \"ffa\",\n" + 
+            "            \"tffa\",\n" + 
+            "            \"syc\",\n" + 
+            "            \"tsyc\",\n" + 
+            "            \"lps\",\n" + 
+            "            \"bb\",\n" + 
+            "            \"ctl\"\n" + 
+            "    ],\n" + 
+            "    \"maps\": [\n" + 
+            "            \"wop_airplane\",\n" + 
+            "            \"wop_anteroom\",\n" + 
+            "            \"wop_backyard\",\n" + 
+            "            \"wop_bath\",\n" + 
+            "            \"wop_cabin\",\n" + 
+            "            \"wop_diner\",\n" + 
+            "            \"wop_huette\",\n" + 
+            "            \"wop_jail\",\n" + 
+            "            \"wop_padattic\",\n" + 
+            "            \"wop_padcrash\",\n" + 
+            "            \"wop_padcrash_dm17\",\n" + 
+            "            \"wop_padgarden\",\n" + 
+            "            \"wop_padkitchen\",\n" + 
+            "            \"wop_padlibrary\",\n" + 
+            "            \"wop_padship\",\n" + 
+            "            \"wop_padshop\"\n" + 
+            "    ],\n" + 
+            "    \"bbMaps\": [\n" + 
+            "            \"wop_anteroombb\",\n" + 
+            "            \"wop_backyardbb\",\n" + 
+            "            \"wop_bathbb\",\n" + 
+            "            \"wop_cabinbb\",\n" + 
+            "            \"wop_dinerbb\",\n" + 
+            "            \"wop_huettebb\",\n" + 
+            "            \"wop_jailbb\",\n" + 
+            "            \"wop_padatticbb\",\n" + 
+            "            \"wop_padcrashbb\",\n" + 
+            "            \"wop_padgardenbb\",\n" + 
+            "            \"wop_padkitchenbb\",\n" + 
+            "            \"wop_padlibrarybb\",\n" + 
+            "            \"wop_padshipbb\",\n" + 
+            "            \"wop_padshopbb\",\n" + 
+            "            \"wop_trashmapbb\"\n" + 
+            "    ],\n" + 
+            "    \"sycMaps\": [\n" + 
+            "            \"wop_airplane\",\n" + 
+            "            \"wop_anteroom\",\n" + 
+            "            \"wop_backyard\",\n" + 
+            "            \"wop_bath\",\n" + 
+            "            \"wop_cabin\",\n" + 
+            "            \"wop_diner\",\n" + 
+            "            \"wop_huette\",\n" + 
+            "            \"wop_jail\",\n" + 
+            "            \"wop_padattic\",\n" + 
+            "            \"wop_padgarden\",\n" + 
+            "            \"wop_padkitchen\",\n" + 
+            "            \"wop_padlibrary\",\n" + 
+            "            \"wop_padship\",\n" + 
+            "            \"wop_padshop\"\n" + 
+            "    ],\n" + 
+            "    \"ctlMaps\": [\n" + 
+            "            \"wop_colorstagectl\",\n" + 
+            "            \"wop_fridgectl\",\n" + 
+            "            \"wop_journeyctl\",\n" + 
+            "            \"wop_padasiactl\",\n" + 
+            "            \"wop_padbasectl\",\n" + 
+            "            \"wop_padboxctl\",\n" + 
+            "            \"wop_padcloisterctl\",\n" + 
+            "            \"wop_padcrashctl\",\n" + 
+            "            \"wop_westernctl\"\n" + 
+            "    ],\n" + 
+            "    \"lpsMaps\": [\n" + 
+            "            \"wop_airplane\",\n" + 
+            "            \"wop_anteroom\",\n" + 
+            "            \"wop_backyard\",\n" + 
+            "            \"wop_bath\",\n" + 
+            "            \"wop_cabin\",\n" + 
+            "            \"wop_diner\",\n" + 
+            "            \"wop_huette\",\n" + 
+            "            \"wop_jail\",\n" + 
+            "            \"wop_padatticlps\",\n" + 
+            "            \"wop_padcrash\",\n" + 
+            "            \"wop_padcrash_dm17\",\n" + 
+            "            \"wop_padgarden_night\",\n" + 
+            "            \"wop_padkitchenlps\",\n" + 
+            "            \"wop_padlibrarylps\",\n" + 
+            "            \"wop_padship\",\n" + 
+            "            \"wop_padshop\"\n" + 
+            "    ],\n\n" + 
+            "    \"ffaTimeLimit\": \"15\",\n" + 
+            "    \"tffaTimeLimit\": \"15\",\n" + 
+            "    \"sycTimeLimit\": \"15\",\n" + 
+            "    \"tsycTimeLimit\": \"15\",\n" + 
+            "    \"lpsTimeLimit\": \"15\",\n" + 
+            "    \"bbTimeLimit\": \"15\",\n" + 
+            "    \"ctlTimeLimit\": \"15\",\n" + 
+            "    \"ffaPointLimit\": \"40\",\n" + 
+            "    \"tffaPointLimit\": \"80\",\n" + 
+            "    \"sycPointLimit\": \"200\",\n" + 
+            "    \"tsycPointLimit\": \"300\",\n" + 
+            "    \"bbPointLimit\": \"400\",\n" + 
+            "    \"ctlPointLimit\": \"10\",\n" + 
+            "    \"input\": \"\",\n" + 
+            "    \"output\": \"\",\n" + 
+            "    \"seed\": \"\",\n" + 
+            "    \"mode\": \"0\",\n" + 
+            "    \"full\": false,\n" + 
+            "    \"length\": false,\n" + 
+            "    \"seperate\": false,\n" + 
+            "    \"types\": false\n" + 
+            "}";
     public static void main(String[] args) {
         int mode = 0;
         long seed = new Random().nextLong();
@@ -21,14 +144,71 @@ public class WMRGenerator {
         boolean printLength = false;
         String outPath = "";
         String inPath = "";
-        String forHelp = "For help, type: java WMRGenerator -h";
+        String forHelp = "For help, type: java -jar WMRGenerator.jar -h";
+
+        // handle config file
+        String cfgName = "wmrgconfig.json";
+        File cfg = new File(cfgName);
+        JSONObject settings = null;
+        if(cfg.exists() && !cfg.isDirectory()) { 
+            // read config 
+            JSONParser parser = new JSONParser();
+            try {
+                Object obj = parser.parse(new FileReader(cfgName));
+                settings = (JSONObject) obj;
+            } catch (IOException e) {
+                System.err.println("Config ERROR: Could not read config file.");
+            } catch (ParseException e) {
+                System.err.println("Config ERROR: Could not parse config file.");
+            }
+            if (settings != null) {
+                //apply settings from config file
+                if(settings.containsKey("seperate"))
+                    printSepRot = (boolean)settings.get("seperate");
+                if(settings.containsKey("types"))
+                    printGTypes = (boolean)settings.get("types");
+                if(settings.containsKey("full"))
+                    printFullRot = (boolean)settings.get("full");
+                if(settings.containsKey("length"))
+                    printLength = (boolean)settings.get("length");
+                if(settings.containsKey("seed") && !settings.get("seed").equals("")) {
+                    try{
+                        seed = Long.parseLong((String)settings.get("seed"));
+                     }catch(NumberFormatException e){
+                        System.out.println("Wrong random seed format: Cannot parse long from config: \"seed\": \"" + (String)settings.get("seed") + "\"" );
+                        return;
+                     }
+                }
+                if(settings.containsKey("input"))
+                    inPath = (String)settings.get("input");
+                if(settings.containsKey("output"))
+                    outPath = (String)settings.get("output");
+                if(settings.containsKey("mode"))
+                    mode = Integer.parseInt((String)settings.get("mode"));
+            }
+            
+        } else {
+            // write default config
+            try {
+                cfg.createNewFile();
+                writeStringToFile(defaultConfig, cfgName);
+            } catch (IOException e) {
+                System.err.println("Error: Could not write file: " + outPath);
+            }
+        }
+        
         //handle arguments
-        if (args.length == 0) {// help
+        if (args.length == 0 && 
+                !(printFullRot ||
+                printGTypes ||
+                printLength ||
+                printSepRot ||
+                !outPath.equals(""))) {// help
             System.out.println(forHelp);
-        } else if (args[0].equals("--help") || args[0].equals("-h")) {// help
+        } else if (args.length != 0 && (args[0].equals("--help") || args[0].equals("-h"))) {// help
             System.out.println("WoP Map Rotation Generator 1.0\n" + 
                     "\n" + 
-                    "Usage: java WMRGenerator [OPTION]...\n" + 
+                    "Usage: java -jar WMRGenerator.jar [OPTION]...\n" + 
                     "\n" + 
                     "-a, --append    FILE        set in- and output file to FILE*\n" + 
                     "-f, --full                  print out the full resulting map sequence, from the beginning\n" + 
@@ -50,13 +230,15 @@ public class WMRGenerator {
                     "*If an input file is set WMRGenerator will read the input, append the rotation and write to\n" + 
                     " the output file. Therefore setting input and output file separately to the same file is the \n" + 
                     " same as using --append. If no output file is set WMRGenerator will neither read nor write\n" + 
-                    " any file.");
+                    " any file.\n\n" +
+                    "Alternatively all options can be set by editing \""+ cfgName + "\"" + " and running java -jar WMRGenerator.jar."
+                    );
         } else {
             for(int i = 0; i< args.length;i++) {
+                
                 if (      args[i].equals("-m") || args[i].equals("--mode")) { // mode
                     try{
                         mode = Integer.parseInt(args[i+1]);
-                        i++;
                      }catch(NumberFormatException e){
                         System.out.println("Wrong mode format: Cannot parse int from input \"" + args[i+1] + "\"" );
                         return;
@@ -83,17 +265,22 @@ public class WMRGenerator {
                 } else if(args[i].startsWith("-k") || args[i].startsWith("--seedkey")){ //seed
                     try{
                         seed = Long.parseLong(args[i+1]);
-                        i++;
                      }catch(NumberFormatException e){
                         System.out.println("Wrong random seed format: Cannot parse long from input \"" + args[i+1] + "\"" );
                         return;
                      }
+                     i++;
                 } else {
                     System.out.println(forHelp);
                 }
             }
+            Generator generator;
             //create generator
-            Generator generator = new Generator();
+            if (settings == null) {
+                generator = new Generator();
+            } else {
+                generator = new Generator(settings);
+            }
             generator.setSeed(seed);
             generator.shuffleGameTypes();
             if (printLength) {
@@ -228,6 +415,32 @@ class WMap {
 }
 
 class Generator {
+    // time limits
+    private String tLffa = "15";
+    private String tLtffa = "15";
+    private String tLsyc = "15";
+    private String tLtsyc = "15";
+    private String tLlps = "15";
+    private String tLbb = "15";
+    private String tLctl = "15";
+    // point limits
+    private String pLffa = "40";
+    private String pLtffa = "80";
+    private String pLsyc = "200";
+    private String pLtsyc = "300";
+    private String pLbb = "400";
+    private String pLctl = "10";
+    
+    // game types
+    private String[] gTypes = {
+            "ffa",
+            "tffa",
+            "syc",
+            "tsyc",
+            "lps",
+            "bb",
+            "ctl"
+    };
     
     //maps for BB gametype
     private String[] bbMaps = {
@@ -346,16 +559,91 @@ class Generator {
         setupGameTypes();
         setupMapSet();
     }
+    public Generator(JSONObject settings) {
+        // get map lists from settings object
+        try {
+            JSONArray tmp;
+            if (settings.containsKey("gameTypes")) {
+                tmp = (JSONArray)settings.get("gameTypes");
+                gTypes = new String[tmp.size()];
+                for (int i = 0; i<tmp.size();i++)
+                    gTypes[i] = (String)tmp.get(i);
+            }
+            if (settings.containsKey("maps")) {
+                tmp = (JSONArray)settings.get("maps");
+                maps = new String[tmp.size()];
+                for (int i = 0; i<tmp.size();i++)
+                    maps[i] = (String)tmp.get(i);
+            }
+            if (settings.containsKey("sycMaps")) {
+                tmp = (JSONArray)settings.get("sycMaps");
+                sycMaps = new String[tmp.size()];
+                for (int i = 0; i<tmp.size();i++)
+                    sycMaps[i] = (String)tmp.get(i);
+            }
+            if (settings.containsKey("bbMaps")) {
+                tmp = (JSONArray)settings.get("bbMaps");
+                bbMaps = new String[tmp.size()];
+                for (int i = 0; i<tmp.size();i++)
+                    bbMaps[i] = (String)tmp.get(i);
+            }
+            if (settings.containsKey("ctlMaps")) {
+                tmp = (JSONArray)settings.get("ctlMaps");
+                ctlMaps = new String[tmp.size()];
+                for (int i = 0; i<tmp.size();i++)
+                    ctlMaps[i] = (String)tmp.get(i);
+            }
+            if (settings.containsKey("lpsMaps")) {
+                tmp = (JSONArray)settings.get("lpsMaps");
+                lpsMaps = new String[tmp.size()];
+                for (int i = 0; i<tmp.size();i++)
+                    lpsMaps[i] = (String)tmp.get(i);
+            }
+        } catch (Exception e) {
+            System.err.println("Config ERROR: Could not read map lists.");
+        }
+        // get limit values from settings object
+        try {
+            // time limit
+            if (settings.containsKey("ffaTimeLimit"))
+                tLffa = (String)settings.get("ffaTimeLimit");
+            if (settings.containsKey("tffaTimeLimit"))
+                tLtffa = (String)settings.get("tffaTimeLimit");
+            if (settings.containsKey("sycTimeLimit"))
+                tLsyc = (String)settings.get("sycTimeLimit");
+            if (settings.containsKey("tsycTimeLimit"))
+                tLtsyc = (String)settings.get("tsycTimeLimit");
+            if (settings.containsKey("lpsTimeLimit"))
+                tLlps = (String)settings.get("lpsTimeLimit");
+            if (settings.containsKey("bbTimeLimit"))
+                tLbb = (String)settings.get("bbTimeLimit");
+            if (settings.containsKey("ctlTimeLimit"))
+                tLctl = (String)settings.get("ctlTimeLimit");
+            // point limit
+            if (settings.containsKey("ffaPointLimit"))
+                pLffa = (String)settings.get("ffaPointLimit");
+            if (settings.containsKey("tffaPointLimit"))
+                pLtffa = (String)settings.get("tffaPointLimit");
+            if (settings.containsKey("sycPointLimit"))
+                pLsyc = (String)settings.get("sycPointLimit");
+            if (settings.containsKey("tsycPointLimit"))
+                pLtsyc = (String)settings.get("tsycPointLimit");
+            if (settings.containsKey("bbPointLimit"))
+                pLbb = (String)settings.get("bbPointLimit");
+            if (settings.containsKey("ctlPointLimit"))
+                pLctl = (String)settings.get("ctlPointLimit");
+        } catch (Exception e) {
+            System.err.println("Config ERROR: Could not read limit values.");
+        }
+        
+        setupGameTypes();
+        setupMapSet();
+    }
     
     private void setupGameTypes() {
         gameTypes = new LinkedList<>();
-        gameTypes.add("ffa");
-        gameTypes.add("tffa");
-        gameTypes.add("syc");
-        gameTypes.add("tsyc");
-        gameTypes.add("lps");
-        gameTypes.add("bb");
-        gameTypes.add("ctl");
+        for (int i = 0; i < gTypes.length; i++)
+            gameTypes.add(gTypes[i]);
     }
     
     public void shuffleGameTypes() {
@@ -490,11 +778,11 @@ class Generator {
         } else if (count == 0 && !mapSet.isEmpty()) {
             // continue as before but if there are no new maps left,
             // either use a map which was at least not used for this gametype or leave the map out
-            while (!mUnused.isEmpty()||
-                    !msUnused.isEmpty()||
-                    !mlUnused.isEmpty()||
-                    !mbUnused.isEmpty()||
-                    !mcUnused.isEmpty()) {
+            while (((gameTypes.contains("ffa")||gameTypes.contains("tffa"))&&!mUnused.isEmpty())||
+                    ((gameTypes.contains("syc")||gameTypes.contains("tsyc"))&&!msUnused.isEmpty())||
+                    (gameTypes.contains("lps")&&!mlUnused.isEmpty())||
+                    (gameTypes.contains("bb")&&!mbUnused.isEmpty())||
+                    (gameTypes.contains("ctl")&&!mcUnused.isEmpty())) {
                 for (; i < gameTypes.size(); i++) {
                     // shuffle the names of all maps which have not been used yet
                     mapNames = asShuffledList(mapSet.keySet());
@@ -511,17 +799,24 @@ class Generator {
             mapNames = asShuffledList(mapSet.keySet());
             int minLength = mRotation.size();
             //do not try to fill the list if there are no maps left for this gametype
-            boolean fillM = true;
-            boolean fillMs = true;
-            boolean fillMb = true;
-            boolean fillMl = true;
-            boolean fillMc = true;
-            while (!mapSet.isEmpty()) {
+            int mCount = 0; // number of gametypes using mRotation
+            int msCount = 0; // number of gametypes using msRotation
+            if (gameTypes.contains("ffa")) mCount++;
+            if (gameTypes.contains("tffa")) mCount++;
+            if (gameTypes.contains("syc")) msCount++;
+            if (gameTypes.contains("tsyc")) msCount++;
+            boolean fillM = mCount>0;
+            boolean fillMs = msCount>0;
+            boolean fillMb = gameTypes.contains("bb");
+            boolean fillMl = gameTypes.contains("lps");
+            boolean fillMc = gameTypes.contains("clt");
+            while (!mapSet.isEmpty()&&
+                    (fillM || fillMs || fillMb || fillMl || fillMc)) {
                 //determine new minLength
                 if(fillM)
-                    minLength = mRotation.size()/2;
+                    minLength = mRotation.size()/mCount;
                 if(fillMs)
-                    minLength = Math.min(minLength, msRotation.size()/2);
+                    minLength = Math.min(minLength, msRotation.size()/msCount);
                 if(fillMb)
                     minLength = Math.min(minLength, mbRotation.size());
                 if(fillMl)
@@ -530,12 +825,12 @@ class Generator {
                     minLength = Math.min(minLength, mcRotation.size());
                 
                 //fill rotations
-                if(fillM && mRotation.size()/2 == minLength)
-                    fillM = pickFirstForGametype(mapNames, "ffa")&&
-                            pickFirstForGametype(mapNames, "tffa");
-                if(fillMs && msRotation.size()/2 == minLength)
-                    fillMs = pickFirstForGametype(mapNames, "syc")&&
-                            pickFirstForGametype(mapNames, "tsyc");
+                if(fillM && mRotation.size()/mCount == minLength)
+                    fillM = (!gameTypes.contains("ffa") || pickFirstForGametype(mapNames, "ffa"))&&
+                            (!gameTypes.contains("tffa") || pickFirstForGametype(mapNames, "tffa"));
+                if(fillMs && msRotation.size()/msCount == minLength)
+                    fillMs = (!gameTypes.contains("syc") || pickFirstForGametype(mapNames, "syc"))&&
+                            (!gameTypes.contains("tsyc") || pickFirstForGametype(mapNames, "tsyc"));
                 if(fillMb && mbRotation.size() == minLength) 
                     fillMb = pickFirstForGametype(mapNames, "bb");
                 if(fillMl && mlRotation.size() == minLength) 
@@ -889,9 +1184,9 @@ class Generator {
             out += "set ml"+ i + " \"map ";
             out += mlRotation.get(i).getlName();
             if (i+1 < mlRotation.size()) {
-                out += "; set nextnmap vstr ml" + (i+1) + "\"\n";
+                out += "; set nextlmap vstr ml" + (i+1) + "\"\n";
             } else {
-                out += "; set nextnmap vstr ml0\"\n";
+                out += "; set nextlmap vstr ml0\"\n";
             }
         }
         out += "\n";
@@ -903,9 +1198,9 @@ class Generator {
             out += "set mb"+ i + " \"map ";
             out += mbRotation.get(i).getbName();
             if (i+1 < mbRotation.size()) {
-                out += "; set nextnmap vstr mb" + (i+1) + "\"\n";
+                out += "; set nextbmap vstr mb" + (i+1) + "\"\n";
             } else {
-                out += "; set nextnmap vstr mb0\"\n";
+                out += "; set nextbmap vstr mb0\"\n";
             }
         }
         out += "\n";
@@ -917,9 +1212,9 @@ class Generator {
             out += "set mc"+ i + " \"map ";
             out += mcRotation.get(i).getcName();
             if (i+1 < mcRotation.size()) {
-                out += "; set nextnmap vstr mc" + (i+1) + "\"\n";
+                out += "; set nextcmap vstr mc" + (i+1) + "\"\n";
             } else {
-                out += "; set nextnmap vstr mc0\"\n";
+                out += "; set nextcmap vstr mc0\"\n";
             }
         }
         out += "\n";
@@ -931,25 +1226,25 @@ class Generator {
             out += "set g" + i +  " \"set nextnbmap vstr next";
             switch (gameTypes.get(i)) {
             case "ffa":
-                out += "nmap; pointlimit 40; timelimit 15; g_gametype 0; set nextgtype vstr g";
+                out += "nmap; pointlimit "+ pLffa +"; timelimit "+ tLffa +"; g_gametype 0; set nextgtype vstr g";
                 break;
             case "tffa":
-                out += "nmap; pointlimit 80; timelimit 15; g_gametype 5; set nextgtype vstr g";
+                out += "nmap; pointlimit "+ pLtffa +"; timelimit "+ tLtffa +"; g_gametype 5; set nextgtype vstr g";
                 break;
             case "syc":
-                out += "smap; pointlimit 200; timelimit 15; g_gametype 3; set nextgtype vstr g";
+                out += "smap; pointlimit "+ pLsyc +"; timelimit "+ tLsyc +"; g_gametype 3; set nextgtype vstr g";
                 break;
             case "tsyc":
-                out += "smap; pointlimit 300; timelimit 15; g_gametype 7; set nextgtype vstr g";
+                out += "smap; pointlimit "+ pLtsyc +"; timelimit "+ tLtsyc +"; g_gametype 7; set nextgtype vstr g";
                 break;
             case "bb":
-                out += "bmap; pointlimit 400; timelimit 15; g_gametype 8; set nextgtype vstr g";
+                out += "bmap; pointlimit "+ pLbb +"; timelimit "+ tLbb +"; g_gametype 8; set nextgtype vstr g";
                 break;
             case "lps":
-                out += "lmap; timelimit 15; g_gametype 4; set nextgtype vstr g";
+                out += "lmap; timelimit "+ tLlps     +"; g_gametype 4; set nextgtype vstr g";
                 break;
             case "ctl":
-                out += "cmap; pointlimit 10; timelimit 15; g_gametype 6; set nextgtype vstr g";
+                out += "cmap; pointlimit "+ pLctl +"; timelimit "+ tLctl +"; g_gametype 6; set nextgtype vstr g";
                 break;
             default:
                 System.out.println("Warning: Strange gametype detected!");
